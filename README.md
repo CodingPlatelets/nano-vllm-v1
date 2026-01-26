@@ -4,7 +4,7 @@ A lightweight [vLLM](https://github.com/vllm-project/vllm) implementation built 
 
 ## Key Features
 
-* 🚀 **Fast offline inference** - Comparable online inference speeds and offline throughput performance to vLLM v1.
+* 🚀 **Fast inference** - Comparable online inference speeds and offline throughput performance to vLLM v1.
 * 📖 **Readable codebase** - Clean implementation in ~ 1,200 lines of Python code
 * ⚡ **Optimization Suite** - Paged Attention, Prefix Caching, Chunked Prefill, Tensor Parallelism, Torch Compilation, and full reproduction of the vLLM v1 scheduling strategy, etc.
 
