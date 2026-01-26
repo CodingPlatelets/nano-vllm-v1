@@ -15,7 +15,7 @@ See `example.py` (offline) and `serving_bench.py` (online) for usage. The API mi
 offline usage example:
 ```python
 from nanovllm import LLM, SamplingParams
-llm = LLM("/YOUR/MODEL/PATH", enforce_eager=True, tensor_parallel_size=1)
+llm = LLM("/YOUR/MODEL/PATH", enforce_eager=True, tensor_parallel_size=1, chunked_prefill=True)
 sampling_params = SamplingParams(temperature=0.6, max_tokens=256)
 prompts = ["Hello, Nano-vLLM."]
 outputs = llm.generate(prompts, sampling_params)
