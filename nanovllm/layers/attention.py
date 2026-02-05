@@ -62,10 +62,21 @@ class Attention(nn.Module):
         if k_cache.numel() and v_cache.numel():
             store_kvcache(k, v, k_cache, v_cache, context.slot_mapping)
 
-        if context.block_tables is not None:    # prefix cache
-            k, v = k_cache, v_cache
-        o = flash_attn_varlen_func(q, k, v,
-                                    max_seqlen_q=context.max_seqlen_q, cu_seqlens_q=context.cu_seqlens_q,
-                                    max_seqlen_k=context.max_seqlen_k, cu_seqlens_k=context.cu_seqlens_k,
-                                    softmax_scale=self.scale, causal=True, block_table=context.block_tables)
+        if context.cu_seqlens_q is None:
+            # Decode with CUDA graph: cu_seqlens not available, use flash_attn_with_kvcache
+            batch_size = context.block_tables.size(0)
+            q = q.view(batch_size, 1, self.num_heads, self.head_dim)
+            o = flash_attn_with_kvcache(q, k_cache, v_cache,
+                                        cache_seqlens=context.context_lens,
+                                        block_table=context.block_tables,
+                                        softmax_scale=self.scale, causal=True)
+            o = o.view(-1, self.num_heads, self.head_dim)
+        else:
+            # Prefill or decode without CUDA graph
+            if context.block_tables is not None:
+                k, v = k_cache, v_cache
+            o = flash_attn_varlen_func(q, k, v,
+                                        cu_seqlens_q=context.cu_seqlens_q, cu_seqlens_k=context.cu_seqlens_k,
+                                        max_seqlen_q=context.max_seqlen_q, max_seqlen_k=context.max_seqlen_k,
+                                        softmax_scale=self.scale, causal=True, block_table=context.block_tables)
         return o
